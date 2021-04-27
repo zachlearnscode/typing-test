@@ -14,14 +14,13 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col class="pa-3" style="border-right: 1px solid black">
-            <span id="promptUpToCurrentWord">{{promptUpToCurrentWord}}</span>
-            <span id="currentWordUpToCurrentChar" style="position:relative;top:10px;">
-              {{currentWordUpToCurrentChar}}
-              <span id="currentChar" style="color:green;">{{currentChar}}</span>
-            </span>
-            <span id="currentWordAfterCurrentChar" style="position:relative;top:10px;">{{currentWordAfterCurrentChar}}</span>
-            <span id="promptAfterCurrentWord">{{promptAfterCurrentWord}}</span>
+          <v-col class="pa-3" style="border-right: 1px solid black"> 
+            <span
+              v-for="(char, c) in prompt"
+              :key="c"
+              style="position:relative;"
+              :style="{top: c >= currentWord.pre && c < currentWord.suc ? '2px' : '', color: c === currentCharacter ? 'red' : '', backgroundColor: char === prompt[c] ? '' : 'red'}"
+            >{{char}}</span>
           </v-col>
           <v-col>
             <v-textarea
@@ -54,7 +53,7 @@ export default {
   }),
 
   computed: {
-    indexesOfWhiteSpaceInPrompt() {
+    spacesInPrompt() {
       let indexes = [];
 
       for (let i = 0; i < this.prompt.length; i++) {
@@ -65,74 +64,116 @@ export default {
 
       return indexes;
     },
-    numberOfWhiteSpacesInInput() {
-      if (this.input) {
-        return this.input.split("").filter((c) => c === " ").length;
-      } else {
+    numberOfSpacesInInput() {
+      if (!this.input) {
         return 0;
       }
+
+      return this.input.split("").filter((c) => c === " ").length;
+    },
+    currentWordOfInput() {
+      let arr = this.input.split(' ');
+
+      return arr[arr.length - 1];
+    },
+    precedingChars() {
+      return this.prompt.slice(0, this.totalCurrentIdx + 1);
+    },
+    totalCurrentIdx() {
+      if (this.idxOfSpacePrecedingCurrentWord) {
+        if (this.currentWordOfInput) {
+          return this.idxOfSpacePrecedingCurrentWord + this.currentWordOfInput.length;
+        } else {
+          return this.idxOfSpacePrecedingCurrentWord;
+        }
+      } else {
+        if (this.currentWordOfInput) {
+          return this.currentWordOfInput.length - 1
+        } else {
+          return -1;
+        }
+      }
+    },
+    currentCharacter() {
+      //Split input by spaces -- the same way the prompt is split
+      //to determine the current word -- locate the last word in the input
+      //, and return the character of the current word at the position
+      //equal to the length of the last word in the input.
+      return this.totalCurrentIdx + 1;
+      // return this.prompt[this.totalCurrentIdx + 1];
+    },
+    remainingPrompt() {
+      return this.prompt.slice(this.totalCurrentIdx + 2);      
+    },
+    idxOfSpacePrecedingCurrentWord() {
+      return this.spacesInPrompt[this.numberOfSpacesInInput - 1];
+    },
+    idxOfSpaceSucceedingCurrentWord() {
+      return this.spacesInPrompt[this.numberOfSpacesInInput];
     },
     currentWord() {
       //The number of white spaces in the input should correspond
-      //to the indexes of white space separating words in the prompt.
-      let atLeastZero =
-        this.numberOfWhiteSpacesInInput - 1 > -1
-          ? this.indexesOfWhiteSpaceInPrompt[
-              this.numberOfWhiteSpacesInInput - 1
-            ]
-          : 0;
-      return this.prompt
-        .slice(
-          atLeastZero,
-          this.indexesOfWhiteSpaceInPrompt[this.numberOfWhiteSpacesInInput]
-        )
-        .trim();
+      //to the indexes of white spaces separating words in the prompt.
+      if (this.numberOfSpacesInInput == 0) {
+        return {pre: 0, suc: this.idxOfSpaceSucceedingCurrentWord + 1}
+      } else {
+        return {pre: this.idxOfSpacePrecedingCurrentWord + 1, suc: this.idxOfSpaceSucceedingCurrentWord}
+        // return this.prompt.slice(
+        //   this.idxOfSpacePrecedingCurrentWord + 1,
+        //   this.idxOfSpaceSucceedingCurrentWord
+        // );
+      }
     },
-    promptUpToCurrentWord() {
-      return this.prompt.slice(0, this.indexesOfWhiteSpaceInPrompt[this.numberOfWhiteSpacesInInput - 1])
-    },
-    promptAfterCurrentWord() {
-      return this.prompt.slice(this.indexesOfWhiteSpaceInPrompt[this.numberOfWhiteSpacesInInput])
-    },
-    currentWordUpToCurrentChar() {
-      let currentWord = this.currentWord;
+    // promptUpToCurrentWord() {
+    //   let idx = this.numberOfWhiteSpacesInInput
+    //     ? this.indexesOfWhiteSpaceInPrompt[this.numberOfWhiteSpacesInInput - 1]
+    //     : 0;
+    //   return this.prompt.slice(0, idx);
+    // },
+    // promptAfterCurrentWord() {
+    //   return this.prompt.slice(
+    //     this.indexesOfWhiteSpaceInPrompt[this.numberOfWhiteSpacesInInput]
+    //   );
+    // },
+    // currentWordUpToCurrentChar() {
+    //   let currentWord = this.currentWord;
 
-      let inputArr = this.input.split(' ');
+    //   let inputArr = this.input.split(" ");
 
-      let lastWord = inputArr[inputArr.length - 1];
+    //   let lastWord = inputArr[inputArr.length - 1];
 
-      return currentWord.slice(0, lastWord.length)
-    },
-    currentWordAfterCurrentChar() {
-      let currentWord = this.currentWord;
-      let inputArr = this.input.split(' '),
-          lastWord = inputArr[inputArr.length - 1];
+    //   return currentWord.slice(0, lastWord.length);
+    // },
+    // currentWordAfterCurrentChar() {
+    //   let currentWord = this.currentWord;
+    //   let inputArr = this.input.split(" "),
+    //     lastWord = inputArr[inputArr.length - 1];
 
-      return currentWord.slice(lastWord.length + 1)
-    },
-    currentChar() {
-      let currentWord = this.currentWord;
-      let inputArr = this.input.split(' '),
-          lastWord = inputArr[inputArr.length - 1];
+    //   return currentWord.slice(lastWord.length + 1);
+    // },
+    // // currentChar() {
+    // //   let currentWord = this.currentWord;
+    // //   let inputArr = this.input.split(" "),
+    // //     lastWord = inputArr[inputArr.length - 1];
 
-      return currentWord[lastWord.length];
-    },
+    // //   return currentWord[lastWord.length];
+    // // },
+    // charsUpToCurrentChar() {
+    //   return this.promptUpToCurrentWord.concat(this.currentWordUpToCurrentChar);
+    // },
 
+    // grossWordsPerMinute() {
+    //   return this.input.length / 5 / 1;
+    // },
+    // adjustedWordsPerMinute() {
+    //   return (this.grossWordsPerMinute - this.numberOfMistakes) / 1;
+    // },
+    // numberOfMistakes() {
+    //   let slicePrompt = this.prompt.slice(0, this.input.length);
+    //   //let count = 0;
 
-
-
-    grossWordsPerMinute() {
-      return this.input.length / 5 / 1;
-    },
-    adjustedWordsPerMinute() {
-      return (this.grossWordsPerMinute - this.numberOfMistakes) / 1;
-    },
-    numberOfMistakes() {
-      let slicePrompt = this.prompt.slice(0, this.input.length);
-      //let count = 0;
-
-      return this.input.split("").filter((c, i) => c !== slicePrompt[i]).length;
-    },
+    //   return this.input.split("").filter((c, i) => c !== slicePrompt[i]).length;
+    // },
   },
 
   methods: {
