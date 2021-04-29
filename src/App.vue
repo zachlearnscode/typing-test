@@ -3,20 +3,21 @@
     <v-main>
       <v-container>
         <v-row>
-          <!-- <v-col> Timer: {{ timer | formatSecs }} </v-col> -->
+          <v-col> Timer: {{ timer | formatSecs }} </v-col>
           <v-col>
-            <!-- <div v-if="timesUp">
-              <span>{{ grossWordsPerMinute }}</span>
-              <span>{{ numberOfMistakes }}</span>
-              <span>{{ adjustedWordsPerMinute }}</span>
-              <v-btn @click="reset">Reset</v-btn>
-            </div> -->
+            <div>
+              <!-- <span>WPM: {{ wordsPerMinute() }}</span> -->
+              <v-btn @click="$refs.textarea.focus()"><div>Focus</div></v-btn>
+            </div>
           </v-col>
         </v-row>
         <v-row>
           <v-col>
-            <v-container fluid>
-              <v-row>
+            <v-container style="height: 70vh; overflow: hidden">
+              <v-row
+                id="promptContainer"
+                style="position: relative; transition: all 100ms ease"
+              >
                 <v-col
                   v-for="(word, w) in words"
                   :key="w"
@@ -26,7 +27,8 @@
                   <span
                     v-for="(char, c) in word"
                     :key="c"
-                    :id="currentIndex(w, c)"
+                    :id="overallIndex(w, c)"
+                    class="char animate__animated animate__faster"
                     style="white-space: pre"
                     >{{ char }}</span
                   >
@@ -34,7 +36,7 @@
               </v-row>
             </v-container>
           </v-col>
-          <v-col>
+          <v-col style="position: absolute; z-index: -1">
             <textarea
               ref="textarea"
               :disabled="disabled"
@@ -58,11 +60,10 @@ export default {
       "In several countries history textbooks are tools to foster nationalism and patriotism, and give students the official line about national enemies. In many countries, history textbooks are sponsored by the national government and are written to put the national heritage in the most favourable light. For example, in Japan, mention of the Nanking Massacre has been removed from textbooks and the entire Second World War is given cursory treatment. Other countries have complained. It was standard policy in communist countries to present only a rigid Marxist historiography. In the United States, especially the southern part history about slavery and the American Civil War are controversial topics. McGraw-Hill Education for example, was criticised for describing Africans brought to American plantations as 'workers' instead of slaves in a textbook. Academic historians have often fought against the politicization of the textbooks, sometimes with success. In 21st-century Germany, the history curriculum is controlled by the 16 states, and is characterized not by superpatriotism but rather by an 'almost pacifistic and deliberately unpatriotic undertone' and reflects 'principles formulated by international organizations such as UNESCO or the Council of Europe, thus oriented towards human rights, democracy and peace.' The result is that 'German textbooks usually downplay national pride and ambitions and aim to develop an understanding of citizenship centered on democracy, progress, human rights, peace, tolerance and Europeanness.'",
     input: "",
     disabled: false,
-    maxInputIndex: 0,
-    // timer: 60,
-    // timerInterval: null,
-    // timesUp: false,
-    // errors: [],
+    testStarted: false,
+    timer: 60,
+    timerInterval: null,
+    timesUp: false,
   }),
 
   computed: {
@@ -79,30 +80,64 @@ export default {
   },
 
   methods: {
-    currentIndex(w, c) {
+    overallIndex(w, c) {
       return this.words.slice(0, w).reduce((a, b) => a + b.length, 0) + c;
     },
-    // startTimer() {
-    //   this.timerInterval = setInterval(() => {
-    //     this.timer--;
-    //   }, 1000);
-    // },
-    // stopTimer() {
-    //   return clearInterval(this.timerInterval);
-    // },
-    // reset() {
-    //   this.input = "";
-    //   this.timer = 60;
-    //   this.timesUp = false;
-    // },
+    startTimer() {
+      this.timerInterval = setInterval(() => {
+        this.timer--;
+      }, 1000);
+    },
+    stopTimer() {
+      this.timesUp = true;
+      return clearInterval(this.timerInterval);
+    },
+    reset() {
+      this.input = "";
+      this.timer = 60;
+      this.timesUp = false;
+    },
+    wordsPerMinute() {
+      let correct = document.querySelectorAll("span.gray"),
+        incorrect = document.querySelectorAll("span.error");
 
-    // addSpace(charIdx, lastIdxOfWord) {
-    //   if (charIdx == lastIdxOfWord) {
-    //     return " ";
-    //   }
+      return Math.round((correct.length - incorrect.length) / 5);
+    },
+    consecutiveErrors() {
+      let disable = false;
 
-    //   return "";
-    // },
+      let current = this.input.length - 1,
+        previous = this.input.length - 2;
+
+      if (
+        this.input[current] !== this.prompt[current] &&
+        this.input[previous] !== this.prompt[previous]
+      ) {
+        disable = true;
+      }
+
+      return disable;
+    },
+    updateClassList(classList, classToAdd, classToRemove) {
+      let result = [];
+
+      classList.remove("blue");
+      classList.forEach((c) => result.push(c));
+
+      if (!result.includes(classToAdd)) {
+        result.push(classToAdd);
+      }
+
+      if (result.includes(classToRemove)) {
+        let idx = result.indexOf(classToRemove);
+
+        result = result.slice(0, idx).concat(result.slice(idx + 1));
+      }
+
+      result = result.toString().replaceAll(",", " ");
+
+      return result;
+    },
   },
 
   filters: {
@@ -117,66 +152,76 @@ export default {
 
   watch: {
     input: function () {
-      let last = this.input.length - 1,
-        secondToLast = this.input.length - 2;
-
-      //Monitor for consecutive errors and disable textarea.
-      if (
-        this.input[last] !== this.prompt[last] &&
-        this.input[secondToLast] !== this.prompt[secondToLast]
-      ) {
+      if (this.consecutiveErrors()) {
         this.disabled = true;
-
-        setTimeout(() => {
-          this.input = this.input.slice(0, last);
-          this.disabled = false;
-        }, 250);
+        this.input = this.input.slice(0, this.input.length - 1);
       }
+
+      //Update prompt styling
+      let forEach = Array.prototype.forEach;
+      let spans = document.querySelectorAll(".char");      
+
+      forEach.call(spans, (s, i) => {
+        let condition = !this.disabled
+          ? i < this.currentInputIndex
+          : i <= this.currentInputIndex;
+
+        if (condition) {
+          this.input[i] === this.prompt[i]
+            ? (spans[i].classList = this.updateClassList(
+                spans[i].classList,
+                "gray",
+                "error"
+              ))
+            : (spans[i].classList = this.updateClassList(
+                spans[i].classList,
+                "error",
+                "gray"
+              ));
+        }
+      });
+
+      let el = document
+        .getElementById(this.currentInputIndex);
+
+      if (!el.classList.contains("error")) {
+        el.classList.add("blue");
+      } else {
+        el.classList.add("animate__headShake")
+      }
+
+      let offset = el.offsetTop;
+
+      document.getElementById("promptContainer").style.bottom =
+        String(offset) + "px";
     },
 
     //Refocus on textarea after it's been disabled -> reenabled
     disabled: function () {
-      if (!this.disabled) {
-        this.$nextTick(() => this.$refs.textarea.focus());
+      if (this.disabled) {
+        setTimeout(() => this.disabled = false, 250);
+      } else {
+        setTimeout(() => this.$refs.textarea.focus(), 250);
       }
     },
 
-    currentInputIndex: function () {
-      if (this.currentInputIndex > this.maxInputIndex) {
-        return (this.maxInputIndex = this.currentInputIndex);
-      }
-    },
+    // currentInputIndex: function () {
+    //   if (this.currentInputIndex == 1 && !this.testStarted) {
+    //     return this.startTimer();
+    //   }
+    // },
 
     timer: function () {
       if (this.timer == 0) {
-        this.timesUp = true;
         return this.stopTimer();
       }
     },
   },
   mounted() {
-    //
-  },
-  updated() {
-    //Check for input accuracy and update styling
-    let el = document.getElementById(this.currentInputIndex),
-      spans = document.querySelectorAll("span");
+    this.$refs.textarea.focus();
+    let el = document.getElementById(this.currentInputIndex);
 
-    let forEach = Array.prototype.forEach;
-
-    forEach.call(spans, (s, i) => {
-      if (i >= this.currentInputIndex) {
-        s.classList = "";
-      } else {
-        this.input[i] === this.prompt[i]
-          ? (spans[i].classList = "gray")
-          : (spans[i].classList = "error");
-      }
-    });
-
-    if (!this.disabled) {
-      el.classList = "blue";
-    }
+    el.classList.add("blue");
   },
 };
 </script>
