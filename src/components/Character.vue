@@ -56,7 +56,7 @@ export default {
 
       switch (this.$vuetify.breakpoint.name) {
         case "xs":
-          result = '1.5rem';
+          result = '1.3rem';
           break;
         case "sm":
           result = '2rem';

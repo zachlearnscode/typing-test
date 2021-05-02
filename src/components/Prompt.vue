@@ -1,5 +1,5 @@
 <template>
-  <v-container class="white rounded-lg" style="overflow: hidden">
+  <v-container class="white rounded-lg" style="overflow: hidden;max-height:calc(100vh - 80px);box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3)">
     <v-row
       class="pa-1"
       style="position: relative; transition: all 250ms ease;"
@@ -59,7 +59,9 @@ export default {
 
   watch: {
     textInput: function () {
-      return this.offset = document.querySelector(".cursor").offsetTop + "px";
+      if (document.querySelector(".cursor")) {
+        return this.offset = document.querySelector(".cursor").offsetTop + "px";
+      }
     },
   },
 };

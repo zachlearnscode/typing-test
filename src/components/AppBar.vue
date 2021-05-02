@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app color="blue" dark>
+  <v-app-bar app dark flat color="blue">
     <v-app-bar-title class="d-flex align-center"
       ><v-icon large class="mr-2">mdi-alpha-t-box</v-icon>Type Test</v-app-bar-title
     >

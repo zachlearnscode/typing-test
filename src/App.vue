@@ -1,42 +1,28 @@
 <template>
   <v-app>
-    <!-- <app-bar :breakpoint="breakpoint"></app-bar> -->
-    <v-main class="blue">
-      <v-container>
-        <prompt
-          :prompt="prompt"
-          :textInput="textInput"
-          :disabled="disabled"
-          elevation="1"
-        ></prompt>
-
-        <text-input
-          :value="textInput"
-          :prompt="prompt"
-          :disabled="disabled"
-          @input="textInput = $event"
-          ref="textInput"
-        ></text-input>
-      </v-container>
+    <app-bar :breakpoint="breakpoint"></app-bar>
+    <v-main class="blue d-flex justify-center align-center">
+      <div v-if="!difficulty" class="d-flex justify-center">
+        <v-btn @click="difficulty = 'medium'">Start The Test</v-btn>
+      </div>
+      <test-container v-else :difficulty="difficulty"></test-container>
     </v-main>
   </v-app>
 </template>
 
 <script>
-//import AppBar from "./components/AppBar.vue";
-import Prompt from "./components/Prompt.vue";
-import TextInput from "./components/TextInput.vue";
+import AppBar from "./components/AppBar.vue";
+import TestContainer from "./components/TestContainer.vue";
+// import Prompt from "./components/Prompt.vue";
+// import TextInput from "./components/TextInput.vue";
 
 export default {
   name: "App",
 
-  components: { Prompt, TextInput },
+  components: { AppBar, TestContainer },
 
   data: () => ({
-    prompt:
-      "In several countries history textbooks are tools to foster nationalism and patriotism, and give students the official line about national enemies. In many countries, history textbooks are sponsored by the national government and are written to put the national heritage in the most favourable light.",
-    textInput: "",
-    disabled: false,
+    difficulty: "",
     testStarted: false,
     timer: 60,
     timerInterval: null,
