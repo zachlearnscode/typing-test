@@ -1,11 +1,15 @@
 <template>
   <v-app>
-    <app-bar :breakpoint="breakpoint"></app-bar>
+    <app-bar :status="status"></app-bar>
     <v-main class="blue d-flex justify-center align-center">
       <div v-if="!difficulty" class="d-flex justify-center">
-        <v-btn @click="difficulty = 'medium'">Start The Test</v-btn>
+        <v-btn @click="$nextTick(() => difficulty = 'medium')">Start The Test</v-btn>
       </div>
-      <test-container v-else :difficulty="difficulty"></test-container>
+      <test-container
+        v-else
+        :difficulty="difficulty"
+        @test-started="testStarted = true"
+      ></test-container>
     </v-main>
   </v-app>
 </template>
@@ -13,8 +17,6 @@
 <script>
 import AppBar from "./components/AppBar.vue";
 import TestContainer from "./components/TestContainer.vue";
-// import Prompt from "./components/Prompt.vue";
-// import TextInput from "./components/TextInput.vue";
 
 export default {
   name: "App",
@@ -24,9 +26,6 @@ export default {
   data: () => ({
     difficulty: "",
     testStarted: false,
-    timer: 60,
-    timerInterval: null,
-    timesUp: false,
   }),
 
   computed: {
@@ -42,6 +41,15 @@ export default {
     breakpoint() {
       return this.$vuetify.breakpoint.name;
     },
+    status() {
+      if (this.difficulty && !this.testStarted) {
+        return "Ready";
+      } else if (this.difficulty && this.testStarted) {
+        return "Test Started";
+      } else {
+        return "Not Ready";
+      }
+    }
   },
 
   methods: {

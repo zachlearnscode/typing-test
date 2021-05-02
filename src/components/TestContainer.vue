@@ -1,17 +1,20 @@
 <template>
-  <v-container class="pa-3" style="position: relative;">
-    <prompt
-      :prompt="prompt"
-      :textInput="textInput"
-      :disabled="disabled"
-    ></prompt>
+  <v-container class="pa-3" style="position: relative">
+    <transition appear enter-active-class="animate__animated animate__fadeInUp">
+      <prompt
+        :prompt="prompt"
+        :textInput="textInput"
+        :disabled="disabled"
+      ></prompt>
+    </transition>
     <text-input
       :value="textInput"
       @input="textInput = $event"
       :prompt="prompt"
       :disabled="disabled"
       ref="textInput"
-      style="position:absolute;z-index: -1;left: 0; top:0 ;"
+      style="position: absolute; z-index: -1; left: 0; top: 0"
+      v-on="$listeners"
     ></text-input>
   </v-container>
 </template>
@@ -69,7 +72,7 @@ export default {
     selectPrompt(difficulty) {
       let randomIndex = Math.floor(Math.random() * 3);
 
-      return (this.prompt = this.prompts[difficulty][randomIndex]);
+      return this.prompts[difficulty][randomIndex];
     },
     checkForConsecutiveErrors() {
       if (this.consecutiveErrors) {
@@ -82,7 +85,9 @@ export default {
     reenable() {
       setTimeout(() => {
         this.disabled = false;
-        this.$nextTick(() => this.$refs.textInput.$el.focus());
+        this.$nextTick(() => {
+          this.$refs.textInput.$el.focus();
+        });
       }, 250);
     },
   },
@@ -91,8 +96,10 @@ export default {
     textInput: "checkForConsecutiveErrors",
   },
 
-  created() {
-    return this.selectPrompt(this.difficulty);
+  beforeMount() {
+    let prompt = this.selectPrompt(this.difficulty);
+
+    return this.prompt = prompt;
   },
 
   mounted() {

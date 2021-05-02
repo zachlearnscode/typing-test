@@ -1,40 +1,27 @@
 <template>
   <v-app-bar app dark flat color="blue">
-    <v-app-bar-title class="d-flex align-center"
-      ><v-icon large class="mr-2">mdi-alpha-t-box</v-icon>Type Test</v-app-bar-title
-    >
+    <v-container fluid class="px-0">
+      <v-row class="flex" justify="space-between" align="center">
+        <v-col cols="8" class="d-flex align-center text-h5">
+          <v-icon large class="mr-2">mdi-alpha-t-box</v-icon>Type Test
+        </v-col>
+        <v-spacer></v-spacer>
+        <v-col class="text-h5 px-0 d-flex justify-end">
+          <timer :status="status"></timer>
+        </v-col>
+      </v-row>
+    </v-container>
   </v-app-bar>
 </template>
 
 <script>
+import Timer from './Timer.vue';
+
 export default {
-  props: ["breakpoint"],
+  props: ['status'],
 
-  computed: {
-    prominent() {
-      let result;
+  components: { Timer }
 
-      switch (this.breakpoint) {
-        case "xs":
-          result = false;
-          break;
-        case "sm":
-          result = false;
-          break;
-        case "md":
-          result = true;
-          break;
-        case "lg":
-          result = true;
-          break;
-        case "xl":
-          result = true;
-          break;
-      }
-
-      return result;
-    },
-  },
 };
 </script>
 
