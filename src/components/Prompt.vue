@@ -1,6 +1,7 @@
 <template>
-  <v-container style="height: 500px; overflow: hidden">
+  <v-container class="white rounded-lg" style="overflow: hidden">
     <v-row
+      class="pa-1"
       style="position: relative; transition: all 250ms ease;"
       :style="{ bottom: offset }"
     >
@@ -10,7 +11,6 @@
         :word="word"
         :numCharsToWord="numCharsToWord(i)"
         :textInput="textInput"
-        :textInputIndex="textInputIndex"
         :disabled="disabled"
       >
       </word>
@@ -51,13 +51,15 @@ export default {
 
   methods: {
     numCharsToWord(idx) {
-      return this.words.slice(0, idx).reduce((a, b) => a + b.length, 0);
+      return this.words
+      .slice(0, idx)
+      .reduce((a, b) => a + b.length, 0);
     },
   },
 
   watch: {
     textInput: function () {
-      return (this.offset = document.querySelector(".blue").offsetTop + "px");
+      return this.offset = document.querySelector(".cursor").offsetTop + "px";
     },
   },
 };

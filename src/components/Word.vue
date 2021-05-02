@@ -7,7 +7,6 @@
       :characterIndex="i"
       :numCharsToWord="numCharsToWord"
       :textInput="textInput"
-      :textInputIndex="textInputIndex"
       :disabled="disabled"
     ></character>
   </v-col>

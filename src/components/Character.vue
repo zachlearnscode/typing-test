@@ -1,12 +1,14 @@
 <template>
   <span
     :class="{
-      blue: isBlue,
+      cursor: isCurrent,
+      animate__flash: isCurrent,
       gray: isGray,
       error: isError,
       animate__headShake: isError,
     }"
-    class="pa-1 animate__animated animate_faster"
+    class="animate__animated"
+    :style="{fontSize: fontSize}"
     >{{ character }}</span
   >
 </template>
@@ -27,7 +29,7 @@ export default {
     textInputIndex() {
       return this.textInput.length;
     },
-    isBlue() {
+    isCurrent() {
       return this.indexWithinPrompt == this.textInputIndex;
     },
     isGray() {
@@ -49,6 +51,29 @@ export default {
         );
       }
     },
+    fontSize() {
+      let result;
+
+      switch (this.$vuetify.breakpoint.name) {
+        case "xs":
+          result = '1.5rem';
+          break;
+        case "sm":
+          result = '2rem';
+          break;
+        case "md":
+          result = '2rem';
+          break;
+        case "lg":
+          result = '2rem';
+          break;
+        case "xl":
+          result = '2rem';
+          break;
+      }
+
+      return result;
+    }
   },
 };
 </script>
@@ -56,21 +81,20 @@ export default {
 <style scoped>
 span {
   font-family: "Courier New", Courier, monospace;
-  font-size: 2rem;
   white-space: pre;
+  border-bottom: 2px solid transparent;
 }
-.blue {
-  background-color: blue;
-  color: white;
-  border-radius: 5px;
-  padding: 1px;
-  transition: all 0.1s ease;
+.cursor {
+  border-bottom: 2px solid #2196F3;
+  
+}
+.animate__animated.animate__flash {
+  animation-iteration-count: infinite;
 }
 .error {
-  background-color: red;
+  background-color: #F44336;
   color: white;
   border-radius: 5px;
-  padding: 1px;
 }
 .gray {
   color: lightgray;
