@@ -1,10 +1,11 @@
 <template>
   <v-container
-    class="white rounded-lg"
+  fluid
+    class="white"
     style="
       overflow: hidden;
       max-height: calc(100vh - 80px);
-      box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
+      box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
     "
   >
     <v-row

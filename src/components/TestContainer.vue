@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pa-3" style="position: relative">
+  <v-container v-if="status !== 'Not Ready' && status !== 'Ready'" class="pa-3" style="position: relative">
     <transition appear enter-active-class="animate__animated animate__fadeInUp">
       <prompt
         :prompt="prompt"
@@ -24,7 +24,7 @@ import Prompt from "./Prompt.vue";
 import TextInput from "./TextInput.vue";
 
 export default {
-  props: ["difficulty", "testDuration"],
+  props: ["status", "testDuration"],
 
   components: {
     Prompt,
@@ -33,10 +33,6 @@ export default {
 
   data() {
     return {
-      prompt: "",
-      textInput: "",
-      disabled: false,
-
       prompts: {
         easy: [
           "Two members of the 1984 class of Jefferson High School are chairing a group of 18 to look for a resort for the 20-year class reunion. A lovely place 78 miles from the city turns out to be the best. It has 254 rooms and a banquet hall to seat 378. It has been open 365 days per year since opening on May 30, 1926. They will need 450 to reserve the resort. Debbie Holmes was put in charge of buying 2,847 office machines for the entire firm. Debbie visited more than 109 companies in 35 states in 6 months. She will report to the board today in Room 2784 at 5 p.m. The board will consider her report about those 109 firms and recommend the top 2 or 3 brands to purchase. Debbie must decide before August 16. Lynn Greene said work started on the project March 27, 2003. The 246 blueprints were mailed to the office 18 days ago. The prints had to be 100 percent accurate before they were acceptable. The project should be finished by May 31, 2025. At that time there will be 47 new condominiums, each having at least 16 rooms. The building will be 25 stories.",
@@ -46,6 +42,7 @@ export default {
         medium: [
           "One study examining 30 subjects, of varying different styles and expertise, has found minimal difference in typing speed between touch typists and self-taught hybrid typists. According to the study, 'The number of fingers does not determine typing speed... People using self-taught typing strategies were found to be as fast as trained typists... instead of the number of fingers, there are other factors that predict typing speed... fast typists... keep their hands fixed on one position, instead of moving them over the keyboard, and more consistently use the same finger to type a certain letter.' To quote doctoral candidate Anna Feit: 'We were surprised to observe that people who took a typing course, performed at similar average speed and accuracy, as those that taught typing to themselves and only used 6 fingers on average' (Wikipedia)",
           "Historically, the fundamental role of pharmacists as a healthcare practitioner was to check and distribute drugs to doctors for medication that had been prescribed to patients. In more modern times, pharmacists advise patients and health care providers on the selection, dosages, interactions, and side effects of medications, and act as a learned intermediary between a prescriber and a patient. Pharmacists monitor the health and progress of patients to ensure the safe and effective use of medication. Pharmacists may practice compounding; however, many medicines are now produced by pharmaceutical companies in a standard dosage and drug delivery form. In some jurisdictions, pharmacists have prescriptive authority to either independently prescribe under their own authority or in collaboration with a primary care physician through an agreed upon protocol.",
+          "In one study of average computer users, the average rate for transcription was 33 words per minute, and 19 words per minute for composition. In the same study, when the group was divided into 'fast', 'moderate' and 'slow' groups, the average speeds were 40 wpm, 35 wpm, and 23 wpm respectively. An average professional typist reaches 50 to 80 wpm, while some positions can require 80 to 95 wpm (usually the minimum required for dispatch positions and other typing jobs), and some advanced typists work at speeds above 120 wpm. Two-finger typists, sometimes also referred to as 'hunt and peck' typists, commonly reach sustained speeds of about 37 wpm for memorized text and 27 wpm when copying text, but in bursts may be able to reach speeds of 60 to 70 wpm. From the 1920s through the 1970s, typing speed (along with shorthand speed) was an important secretarial qualification and typing contests were popular and often publicized by typewriter companies as promotional tools.",
         ],
         hard: [
           "The Master of Business Administration (MBA or M.B.A.) degree originated in the United States in the early 20th century when the country industrialized and companies sought scientific approaches to management. The core courses in an MBA program cover various areas of business such as accounting, applied statistics, business communication, business ethics, business law, finance, managerial economics, management, entrepreneurship, marketing and operations in a manner most relevant to management analysis and strategy. Most programs also include elective courses and concentrations for further study in a particular area, for example accounting, finance, and marketing. MBA programs in the United States typically require completing about sixty credits, nearly twice the number of credits typically required for degrees that cover some of the same material such as the Master of Economics, Master of Finance, Master of Accountancy, Master of Science in Marketing and Master of Science in Management, The MBA is a terminal degree and a professional degree. Accreditation bodies specifically for MBA programs ensure consistency and quality of education. Business schools in many countries offer programs tailored to full-time, part-time, executive (abridged coursework typically occurring on nights or weekends) and distance learning students, many with specialized concentrations.",
@@ -53,6 +50,9 @@ export default {
           "The first personnel management department started at the National Cash Register Co. in 1900. The owner, John Henry Patterson, organized a personnel department to deal with grievances, discharges and safety, and training for supervisors on new laws and practices after several strikes and employee lockouts. During the 1970s, companies experienced globalization, deregulation, and rapid technological change which caused the major companies to enhance their strategic planning and focus on ways to promote organizational effectiveness. This resulted in developing more jobs and opportunities for people to show their skills which were directed to effective applying employees toward the fulfillment of individual, group, and organizational goals. Many years later the major/minor of human resource management was created at universities and colleges also known as business administration.",
         ],
       },
+      prompt: "",
+      textInput: "",
+      disabled: false,
     };
   },
 
@@ -69,11 +69,6 @@ export default {
   },
 
   methods: {
-    selectPrompt(difficulty) {
-      let randomIndex = Math.floor(Math.random() * 3);
-
-      return this.prompts[difficulty][randomIndex];
-    },
     checkForConsecutiveErrors() {
       if (this.consecutiveErrors) {
         this.disabled = true;
@@ -90,19 +85,29 @@ export default {
         });
       }, 250);
     },
+    selectPrompt(difficulty) {
+      let randomIndex = Math.floor(Math.random() * 3),
+        prompt = this.prompts[difficulty][randomIndex];
+
+      console.log(this.prompts.medium.length);
+
+      return (this.prompt = prompt);
+    },
   },
 
   watch: {
     textInput: "checkForConsecutiveErrors",
+    status: function () {
+      if (this.status === "Ready") {
+        let prompt = this.selectPrompt("medium");
+        return (this.prompt = prompt);
+      }
+    },
+    prompt() {
+      return this.$emit("prompt-set");
+    },
   },
-
-  beforeMount() {
-    let prompt = this.selectPrompt(this.difficulty);
-
-    return this.prompt = prompt;
-  },
-
-  mounted() {
+  updated() {
     return this.$refs.textInput.$el.focus();
   },
 };

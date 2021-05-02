@@ -1,7 +1,7 @@
 <template>
-  <v-container class="pa-0">
+  <v-container v-if="status !== 'Not Ready'" class="pa-0">
     <v-row class="pa-0">
-      <v-tooltip v-model="tooltip" bottom>
+      <v-tooltip v-model="tooltip" left>
         <template v-slot:activator="{ on, attrs }">
           <v-col class="text-right pa-0" v-on="on" v-bind="attrs">{{
             timer | time
@@ -27,7 +27,7 @@ export default {
 
   computed: {
     tooltip() {
-      if (this.status == "ready") {
+      if (this.status === "Ready") {
         return true;
       } else {
         return false;
@@ -60,7 +60,7 @@ export default {
 
   watch: {
     status: function () {
-      if (this.status === "Test Started") {
+      if (this.status === "Testing") {
         return this.startTimer();
       }
     },

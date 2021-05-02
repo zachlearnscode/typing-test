@@ -13,7 +13,7 @@ export default {
   watch: {
     value: function() {
       if (this.value.length === 1) {
-        return this.$emit('test-started');
+        return this.$emit('testing');
       }
     }
   }
