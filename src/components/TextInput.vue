@@ -3,6 +3,7 @@
     :value="value"
     @input.capture="$emit('input', $event.target.value)"
     :disabled="disabled"
+    style="visibility:hidden;"
   ></textarea>
 </template>
 
