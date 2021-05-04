@@ -3,9 +3,13 @@
     <v-row class="pa-0">
       <v-tooltip v-model="tooltip" left>
         <template v-slot:activator="{ on, attrs }">
-          <v-col class="text-right pa-0" v-on="on" v-bind="attrs">{{
-            timer | time
-          }}</v-col>
+          <v-col
+            class="text-right font-weight-light pa-0"
+            v-on="on"
+            v-bind="attrs"
+          >
+            {{ timer | time }}
+          </v-col>
         </template>
         <span>Start Typing</span>
       </v-tooltip>
@@ -19,15 +23,14 @@ export default {
 
   data() {
     return {
-      timer: 60,
+      timer: null,
       timerInterval: null,
-      timesUp: false,
     };
   },
 
   computed: {
     tooltip() {
-      if (this.status === "Ready") {
+      if (this.status === "Prompt Set") {
         return true;
       } else {
         return false;
@@ -60,15 +63,20 @@ export default {
 
   watch: {
     status: function () {
+      if (this.status === 'Prompt Set') {
+        return this.timer = 60;
+      }
+
       if (this.status === "Testing") {
         return this.startTimer();
       }
     },
-    timer: function() {
+    timer: function () {
       if (this.timer === 0) {
-        return this.timesUp = true;
+        clearInterval(this.timerInterval);
+        return this.$emit("time-expired");
       }
-    }
+    },
   },
 };
 </script>

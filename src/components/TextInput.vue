@@ -1,7 +1,7 @@
 <template>
   <textarea
     :value="value"
-    @input="$emit('input', $event.target.value)"
+    @input.capture="$emit('input', $event.target.value)"
     :disabled="disabled"
   ></textarea>
 </template>

@@ -1,6 +1,6 @@
 <template>
   <v-container
-  fluid
+    fluid
     class="white"
     style="
       overflow: hidden;
@@ -9,7 +9,7 @@
     "
   >
     <v-row
-      class="px-2"
+      class="pa-5"
       style="position: relative; transition: all 250ms ease"
       :style="{ bottom: offset }"
     >
@@ -20,6 +20,7 @@
         :numCharsToWord="numCharsToWord(i)"
         :textInput="textInput"
         :disabled="disabled"
+        class="animate__animated"
       >
       </word>
     </v-row>
@@ -60,6 +61,12 @@ export default {
   methods: {
     numCharsToWord(idx) {
       return this.words.slice(0, idx).reduce((a, b) => a + b.length, 0);
+    },
+    appear(el) {
+      let delay = el.dataset.index * 150;
+      setTimeout(() => {
+        el.classList.add("animate__fadeIn");
+      }, delay);
     },
   },
 
